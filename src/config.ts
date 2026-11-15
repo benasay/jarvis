@@ -128,6 +128,14 @@ export const KOKORO_VOICE = choice(
   'bm_george',
 )
 
+/**
+ * Lock the browser voice to one installed system voice, by name — e.g.
+ * `Jamie`. Matches the start of the voice's name, so it also finds
+ * "Jamie (Premium)". When set, it is the only voice used and the V key has
+ * nothing else to cycle to. Empty = rank the installed voices as usual.
+ */
+export const SYSTEM_VOICE = str(import.meta.env.VITE_SYSTEM_VOICE) ?? ''
+
 export const env = {
   anthropicKey: str(import.meta.env.VITE_ANTHROPIC_API_KEY) ?? '',
   elevenKey: str(import.meta.env.VITE_ELEVENLABS_API_KEY) ?? '',

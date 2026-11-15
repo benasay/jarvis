@@ -4,6 +4,7 @@ import {
   BACKEND,
   TTS_ENGINE,
   KOKORO_VOICE,
+  SYSTEM_VOICE,
   BRIDGE_HTTP_URL,
 } from '../config'
 import * as kokoro from './kokoro'
@@ -208,8 +209,23 @@ function score(v: SpeechSynthesisVoice): number {
  *  otherwise the picker cycles through a dozen US novelty voices. */
 const USABLE = 40
 
+/** The installed variants of the voice named in VITE_SYSTEM_VOICE, best first. */
+function lockedVoices(): SpeechSynthesisVoice[] {
+  if (!SYSTEM_VOICE) return []
+  const want = SYSTEM_VOICE.toLowerCase()
+  const quality = (v: SpeechSynthesisVoice) =>
+    /premium/i.test(v.name) ? 2 : /enhanced/i.test(v.name) ? 1 : 0
+  return speechSynthesis
+    .getVoices()
+    .filter((v) => v.name.toLowerCase().startsWith(want))
+    .sort((a, b) => quality(b) - quality(a))
+}
+
 /** Best-first list of usable voices — also what the voice picker cycles. */
 export function candidateVoices(): SpeechSynthesisVoice[] {
+  // A locked voice is the whole list: V re-announces it and changes nothing.
+  const locked = lockedVoices()
+  if (locked.length) return [locked[0]]
   return speechSynthesis
     .getVoices()
     .filter((v) => /^en/i.test(v.lang))
@@ -225,6 +241,15 @@ function pickVoice(): SpeechSynthesisVoice | null {
   if (cachedVoice !== undefined) return cachedVoice
   const all = speechSynthesis.getVoices()
   if (!all.length) return null // not loaded yet — try again next utterance
+
+  // A voice locked in .env.local outranks everything, a saved pick included.
+  if (SYSTEM_VOICE) {
+    const locked = lockedVoices()[0]
+    if (locked) return (cachedVoice = locked)
+    console.warn(
+      `[jarvis] VITE_SYSTEM_VOICE="${SYSTEM_VOICE}" matches no voice this browser offers — ranking the installed ones instead.`,
+    )
+  }
 
   // Honour an explicit choice made with the voice picker. A saved name that no
   // longer resolves is dropped rather than left to resurrect itself silently

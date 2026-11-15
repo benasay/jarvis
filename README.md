@@ -205,6 +205,7 @@ chose.
 | **V** | Cycle the browser voice |
 | **Escape** | Stand down |
 | **D** | Live diagnostics panel |
+| **M** | Mute or un-mute the microphone (nothing is heard, wake word included) |
 | **T** | One-line audio self-test |
 
 ---

@@ -1801,6 +1801,10 @@ kbd {
   backdrop-filter: blur(8px);
   pointer-events: none;
 }
+/* Sits under the camera badge so both can show at once. */
+.mic-muted {
+  top: 44px;
+}
 .hands-live::before {
   content: '';
   width: 6px;

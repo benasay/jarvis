@@ -21,6 +21,17 @@ export async function getMic(): Promise<MediaStream> {
   return stream
 }
 
+/**
+ * Silence or restore the shared stream without closing it. A disabled track
+ * delivers nothing but zeros, and keeping the stream means un-muting needs no
+ * second permission prompt.
+ */
+export function setMicEnabled(on: boolean): void {
+  stream?.getAudioTracks().forEach((t) => {
+    t.enabled = on
+  })
+}
+
 export async function startAnalyser(): Promise<void> {
   if (analyser) return
   const s = await getMic()

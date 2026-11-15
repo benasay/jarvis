@@ -158,6 +158,7 @@ export function Hud() {
   const bootNote = useStore((s) => s.bootNote)
   const gestures = useStore((s) => s.gestures)
   const looking = useStore((s) => s.looking)
+  const muted = useStore((s) => s.muted)
   const ui = useStore((s) => s.ui)
 
   // accentFor folds JARVIS's overrides in over the phase colour, so one
@@ -335,6 +336,7 @@ export function Hud() {
           {looking ? `LOOKING — ${looking.toUpperCase()}` : 'CAMERA ON · G TO STOP'}
         </div>
       )}
+      {muted && <div className="hands-live mic-muted">MIC MUTED · M TO UNMUTE</div>}
       <GestureGuide live={gestures} />
     </div>
   )

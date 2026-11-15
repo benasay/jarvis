@@ -29,7 +29,7 @@ import {
   usingBridge,
   type Msg,
 } from './lib/brain'
-import { startAnalyser, micLevel } from './lib/audio'
+import { startAnalyser, micLevel, setMicEnabled } from './lib/audio'
 import { probeCapabilities } from './lib/capabilities'
 import { env } from './config'
 
@@ -83,6 +83,7 @@ export default function App() {
    */
   const turn = useRef(0)
   const booting = useRef(false)
+  const muting = useRef(false)
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const voicePoll = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -222,6 +223,7 @@ export default function App() {
 
   /** What the voice loop should do with what it hears, derived from phase. */
   const mode = (): VoiceMode => {
+    if (store.getState().muted) return 'deaf'
     switch (store.getState().phase) {
       case 'offline':
       case 'boot':
@@ -314,6 +316,15 @@ export default function App() {
 
   const onVoiceError = (message: string) => {
     store.getState().setError(message)
+  }
+
+  const voiceHandlers = {
+    mode,
+    onWake,
+    onSpeechStart,
+    onPartial,
+    onUtterance,
+    onError: onVoiceError,
   }
 
   // -- power on -------------------------------------------------------------
@@ -516,17 +527,40 @@ export default function App() {
     await probeCapabilities()
     store.getState().setVoice(currentVoiceName())
 
-    // One voice loop, started once, running until the page closes.
-    voice.current = await startVoice({
-      mode,
-      onWake,
-      onSpeechStart,
-      onPartial,
-      onUtterance,
-      onError: onVoiceError,
-    })
+    // One voice loop, running until the page closes or the user mutes it.
+    voice.current = await startVoice(voiceHandlers)
 
     store.getState().setPhase('dormant')
+  }
+
+  // -- mute -----------------------------------------------------------------
+
+  /**
+   * M mutes the microphone outright. Escape only stands him down, which still
+   * leaves the wake word listening; this stops the recogniser and silences the
+   * stream, so nothing said in the room is heard or sent anywhere until M is
+   * pressed again.
+   */
+  const toggleMute = async () => {
+    const s = store.getState()
+    if (s.phase === 'offline' || s.phase === 'boot' || muting.current) return
+    muting.current = true
+    try {
+      if (!s.muted) {
+        s.setMuted(true)
+        goDormant()
+        voice.current?.stop()
+        voice.current = null
+        setMicEnabled(false)
+      } else {
+        setMicEnabled(true)
+        s.setError(null)
+        voice.current = await startVoice(voiceHandlers)
+        s.setMuted(false)
+      }
+    } finally {
+      muting.current = false
+    }
   }
 
   // -- clap to start --------------------------------------------------------
@@ -631,6 +665,13 @@ export default function App() {
         return
       }
 
+      // M mutes and un-mutes the microphone.
+      if (e.key === 'm' && !e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault()
+        void toggleMute()
+        return
+      }
+
       // T speaks a fixed line, bypassing the wake word, the recogniser and the
       // model entirely. When "I can't hear him" is the report, this is the one
       // keypress that separates a broken voice engine from a broken voice loop
@@ -665,6 +706,9 @@ export default function App() {
       // a missed wake word doesn't cost a take.
       if (e.code !== 'Space' || e.repeat) return
       e.preventDefault()
+
+      // Muted means muted: starting a turn nobody can be heard in helps no one.
+      if (store.getState().muted) return
 
       const phase = store.getState().phase
       if (phase === 'offline') {

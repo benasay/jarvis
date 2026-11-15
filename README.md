@@ -206,6 +206,7 @@ chose.
 | **Escape** | Stand down |
 | **D** | Live diagnostics panel |
 | **/** | Focus the typing box; Enter sends, Escape leaves it |
+| **H** | Open or close the archive of past conversations (kept in this browser only) |
 | **M** | Mute or un-mute the microphone (nothing is heard, wake word included) |
 | **T** | One-line audio self-test |
 

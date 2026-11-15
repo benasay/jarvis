@@ -1,7 +1,7 @@
 import { getMic } from './audio'
 
 /**
- * Clap to wake him up.
+ * Clap twice to wake him up.
  *
  * The ignition button exists because browsers will not let a page make a sound
  * until someone has interacted with it. That is still true, so the button is
@@ -36,8 +36,13 @@ const DECAY_MS = 130
 /** A candidate that has not decayed by now was something sustained. */
 const GIVE_UP_MS = 260
 
-/** Nothing counts for this long after a clap, so one strike is one event. */
-const COOLDOWN_MS = 1200
+/** Nothing counts for this long after a clap, so one strike is one event —
+ *  short enough that the second clap of a pair is still heard. */
+const COOLDOWN_MS = 160
+
+/** Two claps this close together are a pair. Any further apart and the later
+ *  one is treated as the first of a new pair. */
+const PAIR_WITHIN_MS = 1000
 
 export type ClapListener = { stop: () => void }
 
@@ -85,6 +90,8 @@ export async function listenForClap(onClap: () => void): Promise<ClapListener> {
   let stopped = false
   let raf = 0
   let lastClap = 0
+  /** When the first clap of a possible pair landed. 0 = not waiting for one. */
+  let firstOfPair = 0
 
   /** A transient under examination, waiting to prove it decays. */
   let candidate: { at: number; peak: number } | null = null
@@ -119,7 +126,14 @@ export async function listenForClap(onClap: () => void): Promise<ClapListener> {
         lastClap = now
         diag.claps++
         diag.rejected = ''
-        onClap()
+        // One clap is a door, a dropped book, applause on a video. Two in a
+        // row is someone asking — so it takes a pair to bring him up.
+        if (firstOfPair && now - firstOfPair <= PAIR_WITHIN_MS) {
+          firstOfPair = 0
+          onClap()
+        } else {
+          firstOfPair = now
+        }
       } else if (now - candidate.at > GIVE_UP_MS) {
         // Still going. A voice, a chair, music — something with a body to it.
         diag.rejected = 'too sustained to be a clap'

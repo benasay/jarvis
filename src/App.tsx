@@ -6,6 +6,7 @@ import { Ignition } from './ui/Ignition'
 import { Diagnostics } from './ui/Diagnostics'
 import { useStore } from './store'
 import { TYPED_EVENT } from './ui/TypeBox'
+import { takeContext } from './lib/history'
 import { startVoice, type Voice, type VoiceMode } from './lib/voice'
 import { createSpeaker, cycleVoice, currentVoiceName } from './lib/tts'
 import * as sfx from './lib/sfx'
@@ -149,7 +150,9 @@ export default function App() {
     let filled = false
 
     try {
-      const { text } = await ask(said, history.current, {
+      // An old conversation being continued brings its transcript with it,
+      // once. The screen and the archive still show only what was said.
+      const { text } = await ask(takeContext() + said, history.current, {
         onText: (delta) => {
           if (stale()) return
           if (!started) {
@@ -585,7 +588,7 @@ export default function App() {
   // -- clap to start --------------------------------------------------------
 
   /**
-   * A clap brings him up, as an alternative to the button.
+   * Two claps bring him up, as an alternative to the button.
    *
    * Only while the ignition screen is showing, and torn down the moment he
    * boots — the microphone is about to belong to the voice loop, and two

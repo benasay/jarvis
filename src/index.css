@@ -369,6 +369,110 @@ body::after {
   border-color: var(--accent);
 }
 
+/* ----------------------------------------------------------------- archive */
+
+.archive {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  width: min(380px, 92vw);
+  display: flex;
+  flex-direction: column;
+  padding: 34px 30px 26px;
+  box-sizing: border-box;
+  pointer-events: auto;
+  color: #cfe6e3;
+  background: linear-gradient(to right, transparent, rgba(2, 8, 12, 0.92) 22%);
+  backdrop-filter: blur(6px);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.archive-head,
+.archive-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.archive-head { margin-bottom: 26px; }
+.archive-foot { margin-top: 20px; }
+
+.archive-dim { opacity: 0.4; }
+
+.archive-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.archive-link,
+.archive-row {
+  all: unset;
+  cursor: pointer;
+}
+
+.archive-link {
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--accent);
+}
+
+.archive-link:hover { color: #fff; opacity: 1; }
+
+.archive-row {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  width: 100%;
+  padding: 9px 0;
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+}
+
+.archive-row:hover,
+.archive-row:focus-visible { opacity: 1; }
+
+.archive-when {
+  flex: none;
+  width: 58px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+.archive-title {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.archive-asked {
+  margin: 22px 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  opacity: 0.75;
+}
+
+.archive-asked:first-child { margin-top: 0; }
+
+.archive-answer {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
 kbd {
   font-family: 'JetBrains Mono', monospace;
   border: 1px solid currentColor;

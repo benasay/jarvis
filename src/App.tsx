@@ -5,6 +5,7 @@ import { Boot } from './ui/Boot'
 import { Ignition } from './ui/Ignition'
 import { Diagnostics } from './ui/Diagnostics'
 import { useStore } from './store'
+import { TYPED_EVENT } from './ui/TypeBox'
 import { startVoice, type Voice, type VoiceMode } from './lib/voice'
 import { createSpeaker, cycleVoice, currentVoiceName } from './lib/tts'
 import * as sfx from './lib/sfx'
@@ -308,6 +309,24 @@ export default function App() {
     }
 
     void respond(said)
+  }
+
+  /**
+   * A prompt typed into the box. It is a turn like any spoken one, and it
+   * interrupts whatever he is doing the way speaking over him would — but it
+   * works while the microphone is muted, which speech by definition cannot.
+   */
+  const onTyped = (text: string) => {
+    const phase = store.getState().phase
+    if (phase === 'offline' || phase === 'boot') return
+    store.getState().setError(null)
+    if (phase === 'thinking' || phase === 'tooling' || phase === 'speaking') {
+      silence()
+      interrupt()
+      store.getState().setActiveTool(null)
+      music.working(false)
+    }
+    void respond(text)
   }
 
   const onPartial = (text: string) => {
@@ -727,10 +746,13 @@ export default function App() {
       }
     }
     window.addEventListener('keydown', onKey)
+    const onTypedEvent = (e: Event) => onTyped((e as CustomEvent<string>).detail)
+    window.addEventListener(TYPED_EVENT, onTypedEvent)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('keydown', onKey)
+      window.removeEventListener(TYPED_EVENT, onTypedEvent)
       clearIdle()
       if (voicePoll.current) clearInterval(voicePoll.current)
       voice.current?.stop()

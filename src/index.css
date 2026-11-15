@@ -332,6 +332,43 @@ body::after {
   letter-spacing: 0.2em;
 }
 
+/* The one part of the HUD that takes the pointer and the keyboard. */
+.typebox {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  width: min(560px, 60vw);
+  pointer-events: auto;
+}
+
+.typebox-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  color: #fff;
+  background: color-mix(in srgb, var(--accent) 6%, rgba(2, 8, 12, 0.7));
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline: none;
+  opacity: 0.55;
+  transition: opacity 200ms ease, border-color 200ms ease;
+}
+
+.typebox-input::placeholder {
+  color: color-mix(in srgb, var(--accent) 70%, white);
+  opacity: 0.5;
+  letter-spacing: 0.08em;
+}
+
+.typebox-input:focus {
+  opacity: 1;
+  border-color: var(--accent);
+}
+
 kbd {
   font-family: 'JetBrains Mono', monospace;
   border: 1px solid currentColor;

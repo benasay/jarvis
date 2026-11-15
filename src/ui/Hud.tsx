@@ -6,6 +6,7 @@ import { BladeSweep, Blades } from './Blades'
 import { Effects } from './Effects'
 import { Pointer } from './Pointer'
 import { GestureGuide } from './GestureGuide'
+import { TypeBox } from './TypeBox'
 
 const statusText: Record<Phase, string> = {
   offline: 'OFFLINE',
@@ -311,9 +312,11 @@ export function Hud() {
 
       {error && <div className="error">{error}</div>}
 
+      <TypeBox />
+
       <footer className="hud-bottom">
         <span className="hint">
-          say <b>“hey jarvis”</b> · <kbd>Space</kbd> to talk · <kbd>G</kbd> hands
+          say <b>“hey jarvis”</b> · <kbd>Space</kbd> to talk · <kbd>/</kbd> type · <kbd>M</kbd> mute · <kbd>G</kbd> hands
           {voice && (
             <>
               {' · '}
